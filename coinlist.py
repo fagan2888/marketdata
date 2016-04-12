@@ -13,7 +13,6 @@ class PoloCoinList():
         for k, v in vol.iteritems():
             if k.startswith("BTC_") or k.endswith("_BTC"):
         	self._pairs.append(k)
-                print v
                 for c, val in v.iteritems():
                     if c != 'BTC':
     		        self._coins.append(c) 
