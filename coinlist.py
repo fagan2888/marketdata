@@ -24,3 +24,9 @@ class PoloCoinList():
 
     def allCoins(self):
         return self._df
+
+    def topNVolume(self, n = 5, order = False):
+        if order:
+            return self._df.sort('volume')[-n:]
+        else:
+            return self._df.sort('volume')[-n:].sort()
