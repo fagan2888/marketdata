@@ -22,3 +22,12 @@ class PoloCoinList():
         self._pairs = np.array(self._pairs)
         self._coins = np.array(self._coins)
         self._volumes = np.array(self._volumes)
+
+    def allCoins(self):
+        return self._coins
+
+    def allPairs(self):
+        return self._pairs
+
+    def allVolume(self):
+        return self._volumes
