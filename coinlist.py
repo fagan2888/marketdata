@@ -27,10 +27,11 @@ class PoloCoinList():
 
     def topNVolume(self, n = 5, order = False, minVolume = 0):
 	if minVolume == 0:
+	    r = self._df.sort_values(by='volume', ascending=False)[:n]
             if order:
-		return self._df.sort_values(by='volume')[-n:]
+		return r
             else:
-		return self._df.sort_values(by='volume')[-n:].sort_index()
+		return r.sort_index()
 	else:
 	    return self._df[self._df.volume >= minVolume]
 
