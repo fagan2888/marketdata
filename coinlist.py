@@ -5,8 +5,8 @@ import pandas as pd
 
 class PoloCoinList():
     def __init__(self):
-        self._polo = Poloniex()
-        vol = self._polo.marketVolume()
+        self.polo = Poloniex()
+        vol = self.polo.marketVolume()
         pairs = []
         coins = []
         volumes = []
@@ -22,8 +22,11 @@ class PoloCoinList():
 
         self._df = pd.DataFrame({'coin': coins, 'pair': pairs, 'volume': volumes})
 
-    def allCoins(self):
+    def allActiveCoins(self):
         return self._df
+
+    def allCoins(self):
+	return self.polo.marketStatus().keys()	
 
     def topNVolume(self, n = 5, order = False, minVolume = 0):
 	if minVolume == 0:
