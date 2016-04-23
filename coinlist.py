@@ -30,6 +30,7 @@ class CoinList():
 		        volumes.append(float(val))
 
         self._df = pd.DataFrame({'coin': coins, 'pair': pairs, 'volume': volumes})
+	self._df = self._df.set_index('coin')
 
     def allActiveCoins(self):
         return self._df
