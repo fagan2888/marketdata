@@ -21,15 +21,17 @@ class PriceMatrix(CoinList):
 	self._period = period
 	self.__coinFilter()
 
-	iter_coin = iter(self._coins)
-	coin = iter_coin.next()
+	#iter_coin = iter(self._coins)
+	coin = 'LTC'#iter_coin.next()
 	chart = self.getChart(coin)
-	self._chart = chart ######
+	#self._chart = chart ######
 	cols = [d['date'] for d in chart]
 	self._pm = pd.DataFrame(index = self._coins, columns = cols)
 	self.__fillPriceRow(coin)
 
-	for c in iter_coin:
+	for c in self._coins:
+	    if c == 'LTC':
+		continue
 	    ch = self.getChart(c)
 	    self.__fillPriceRow(c)
 
