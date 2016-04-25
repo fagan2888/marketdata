@@ -1,23 +1,26 @@
 from coinlist import CoinList
 import pandas as pd
 from time import time
+from time import sleep
 import numpy as np
+
+NOW = 0
+FIVE_MINUTES = 60*5
+FIFTEEN_MINUTES = FIVE_MINUTES * 3
+HALF_HOUR = FIFTEEN_MINUTES * 2
+HOUR = HALF_HOUR * 2
+TWO_HOUR = HOUR * 2
+FOUR_HOUR = HOUR * 4
+DAY = HOUR * 24
 
 
 class PriceMatrix(CoinList):
 
-    FIVE_MINUTES = 60*5
-    FIFTEEN_MINUTES = FIVE_MINUTES * 3
-    HALF_HOUR = FIFTEEN_MINUTES * 2
-    HOUR = HALF_HOUR * 2
-    TWO_HOUR = HOUR * 2
-    FOUR_HOUR = HOUR * 4
-    DAY = HOUR * 24
-
-    def __init__(self, start = time() - DAY, end = time(), period = HALF_HOUR):
+    def __init__(self, start = DAY, end = NOW, period = HALF_HOUR):
 	super(PriceMatrix, self).__init__()
-	self._start = start
-	self._end = end
+	t = time()
+	self._start = t - start
+	self._end = t - end
 	self._period = period
 	self.__coinFilter()
 
@@ -32,7 +35,6 @@ class PriceMatrix(CoinList):
 	for c in self._coins:
 	    if c == 'LTC':
 		continue
-	    ch = self.getChart(c)
 	    self.__fillPriceRow(c)
 
 	print start, end, period
@@ -40,20 +42,21 @@ class PriceMatrix(CoinList):
 
     def __fillPriceRow(self, coin):
 	chart = self.getChart(coin)
-	#print coin
-	#print chart[0]
-	#print len(chart)
-	row = [d['close'] for d in chart]
-	d = self._pm.shape[1] - len(row)
-	if d > 0:
-	    row.extend([np.NaN]*d)
-	elif d < 0:
-	    row = row[:d]
+	for c in chart:
+	    self._pm.loc[coin, c['date']] = c['close']
+	#row = {d['date']: d['close'] for d in chart}
+	#d = self._pm.shape[1] - len(row)
+	#if d > 0:
+	#    row.extend([np.NaN]*d)
+	#elif d < 0:
+	#    row = row[:d]
 	    
-	self._pm.loc[coin] =  row
+	#self._pm.loc[coin] =  row
+	#self._pm.replace({coin: row})
 
 
     def getChart(self, coin):
+	#sleep(0.5)
 	chart = self.polo.marketChart( \
 			pair = self._df.loc[coin]['pair'], \
 			start = self._start, \
@@ -62,5 +65,5 @@ class PriceMatrix(CoinList):
 	return chart
 
     def __coinFilter(self):
-        self._coins = self.topNVolume( n = len(self.allActiveCoins()) / 3).index
+        self._coins = self.topNVolume( n = len(self.allActiveCoins()) / 5).index
 

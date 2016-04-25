@@ -58,3 +58,6 @@ target/
 
 #Python cached files
 .*.swp
+
+#Old logs
+*.log.?
