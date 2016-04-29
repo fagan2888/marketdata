@@ -46,6 +46,7 @@ class PriceMatrix(CoinList):
 	    self._pm.loc[coin, c['date']] = c['close']
 
 
+    '''
     def completeLastColumns(self):
 	for c in range(-1, -6, -1):
 	    b = self.anyNaNinColumn(c) 
@@ -61,6 +62,7 @@ class PriceMatrix(CoinList):
 
     def anyNaNinColumn(self, c):
 	return self._pm.iloc[:, -c].isnull()
+    '''
 
 
     def getChart(self, coin, start, end):
