@@ -61,3 +61,6 @@ target/
 
 #Old logs
 *.log.?
+
+#screen log
+hardcopy.?
