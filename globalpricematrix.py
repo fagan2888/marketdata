@@ -18,8 +18,9 @@ CSV_DEFAULT = 'pm.csv'
 
 class GlobalPriceMatrix(CoinList):
 
-    def __init__(self, start = DAY, end = NOW, period = HALF_HOUR, csv = None):
-	super(PriceMatrix, self).__init__()
+    def __init__(self, start = DAY, end = NOW, period = HALF_HOUR, csv = None, coin_filter = 0.2):
+	super(GlobalPriceMatrix, self).__init__()
+	self._coin_filter = coin_filter
 	if csv:
 	    self.__getPriceFromFile(csv)
 	else:
@@ -66,7 +67,9 @@ class GlobalPriceMatrix(CoinList):
 
 
     def __coinFilter(self):
-        self._coins = self.topNVolume( n = len(self.allActiveCoins) / 5).index
+	if(self._coin_filter):
+            self._coins = self.topNVolume(
+		n = int(len(self.allActiveCoins) * self._coin_filter)).index
 
 
     def to_csv(self, filepath = CSV_DEFAULT):
