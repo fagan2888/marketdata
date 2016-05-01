@@ -51,6 +51,11 @@ class PriceMatrix(CoinList):
 	    self._pm.loc[coin, c['date']] = c['close']
 
 
+    @property
+    def pm(self):
+	return self._pm
+
+
     def getChart(self, coin, start, end):
 	chart = self.polo.marketChart( \
 			pair = self._df.loc[coin]['pair'], \
@@ -61,7 +66,7 @@ class PriceMatrix(CoinList):
 
 
     def __coinFilter(self):
-        self._coins = self.topNVolume( n = len(self.allActiveCoins()) / 5).index
+        self._coins = self.topNVolume( n = len(self.allActiveCoins) / 5).index
 
 
     def to_csv(self, filepath = CSV_DEFAULT):
