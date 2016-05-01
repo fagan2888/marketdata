@@ -16,7 +16,7 @@ DAY = HOUR * 24
 CSV_DEFAULT = 'pm.csv'
 
 
-class PriceMatrix(CoinList):
+class GlobalPriceMatrix(CoinList):
 
     def __init__(self, start = DAY, end = NOW, period = HALF_HOUR, csv = None):
 	super(PriceMatrix, self).__init__()
@@ -52,7 +52,7 @@ class PriceMatrix(CoinList):
 
 
     @property
-    def pm(self):
+    def pricematrix(self):
 	return self._pm
 
 
