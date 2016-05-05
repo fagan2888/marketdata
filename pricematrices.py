@@ -29,7 +29,11 @@ class PriceMatrices(gpm.GlobalPriceMatrix):
 
 
     def __removeLastNaNs(self):
-	pass
+	i = -1
+	while( self.pricematrix.iloc[:, i].isnull().any() ):
+	    i -= 1
+	i += 1
+	self._num_periods = self.pricematrix.shape[1] + i
 
 
     def __normalize_portions(self, train_portion, validation_portion, test_portion):
@@ -39,7 +43,7 @@ class PriceMatrices(gpm.GlobalPriceMatrix):
 	    raise ValueError('Portions must be positive')
 	else:
 	    s = float(train_portion + validation_portion + test_portion)
-	    self._test_portion = test_portion / s
-	    #TODO: change to _test_set_size
-	    self._validation_portion = validation_portion / s
-	    self._train_portion = train_portion / s
+	    portions = np.array([train_portion, train_portion + validation_portion]) / s
+	    portion_split = (portions * self._num_periods).astype(int)
+	    indices = range(self._num_periods)
+	    self._train_ind, self._val_ind, self._test_ind = np.split(indices, portion_split)
