@@ -11,20 +11,46 @@ class PriceMatrices(gpm.GlobalPriceMatrix):
 				  validation_portion, \
 				  test_portion)
 	self.__permutation(window_size)
+	self._index_in_epoch = 0
+	self._completed_epochs = 0
 
 
     def next_batch(self, batch_size):
-	pass
+	#based on: https://goo.gl/bv7hp7
+	batch = []
+	num_train_periods = len(self._perm)
+	start = self._index_in_epoch
+	self._index_in_epoch += batch_size
+
+	if self._index_in_epoch > num_train_periods:
+	    #complete one epoch, start new epoch
+	    self._completed_epochs += 1
+	    np.randow.shuffle(self._perm)
+	    start = 0
+	    self._index_in_epoch = batch_size
+
+	end = self._index_in_epoch
+
+	for i in xrange(start, end):
+	     batch.append(self.getSubMatrix(self._perm[i]))
+
+        return batch
+
+
+    def getSubMatrix(ind):
+	#TODO: normalized price submatrix
+	return None
 
 
     def __permutation(self, window_size):
 	self._window_size = window_size
-	#TODO: permution of the training set only
-	#self._perm = np.arange(self.pricematrix.shape[1] \
-	#			* self._train_portion
+	self._perm = self._train_ind[:-window_size]
+	np.random.shuffle(self._perm)
+	
 
     def __fillNaN(self):
 	#refer to 'Working with missing data' on pandas doc
+	#TODO
 	pass
 
 
