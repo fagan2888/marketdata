@@ -52,8 +52,8 @@ class PriceMatrices(gpm.GlobalPriceMatrix):
 
 
     def getSubMatrix(self, ind):
-	dfc = self.pricematrix.iloc[:, ind:ind+self._window_size+1]	
-	df = dfc.copy()
+	dfc = self.pricematrix.iloc[:, ind:ind+self._window_size+1].as_matrix()	
+	df = dfc.copy() #memory problem TODO: fix this
 	fr = self.__fillNaN_pricenorm(df)
 	return df
 
@@ -71,10 +71,11 @@ class PriceMatrices(gpm.GlobalPriceMatrix):
 
     def __fillNaN_pricenorm(self, df):
 	#refer to 'Working with missing data' on pandas doc
-	for r in df.iterrows():
-	    coin = r[0]
-	    row = r[1].iloc[:-1]
-	    isnull = row.isnull()
+	#for r in df.iterrows():
+	for i in df.shape[0]
+	    #coin = r[0]
+	    row = df[i,:-1]#r[1].iloc[:-1]
+	    isnull = np.isnan(row)
 	    if(isnull.any()):  #check if there are any NaN's
 		#check number of valid prices in the row
 		if(sum(~isnull) < MIN_NUM_PERIOD):
