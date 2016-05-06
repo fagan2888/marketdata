@@ -1,21 +1,32 @@
 import globalpricematrix as gpm
 import numpy as np
 
+FAKE_DEFLATION_FACTOR = 1.5
+
+MIN_NUM_PERIOD = 3
+
 
 class PriceMatrices(gpm.GlobalPriceMatrix):
 
-    def __init__(self, start = gpm.YEAR, end = gpm.NOW, period = gpm.HALF_HOUR, csv = None, coin_filter = 0.2, window_size = 30, train_portion = 0.7, validation_portion = 0.15, test_portion = 0.15):
+    def __init__(self, start = gpm.YEAR, end = gpm.NOW, period = gpm.HALF_HOUR, csv = None, coin_filter = 0.2, \
+			 window_size = 30, train_portion = 0.7, validation_portion = 0.15, test_portion = 0.15):
 	super(PriceMatrices, self).__init__(start, end, period, csv, coin_filter)
 	self.__removeLastNaNs()
 	self.__normalize_portions(train_portion, \
 				  validation_portion, \
 				  test_portion)
 	self.__permutation(window_size)
+	self.__make_fake_prices()
 	self._index_in_epoch = 0
 	self._completed_epochs = 0
 
 
-    def next_batch(self, batch_size):
+    def __make_fake_prices():
+	self._fake_prices = [ FAKE_DEFLATION_FACTOR**(self._window_size - i - 1) \
+				for i in xrange(self._window_size + 1) ]
+
+
+    def next_batch(self, batch_size = 1):
 	#based on: https://goo.gl/bv7hp7
 	batch = []
 	num_train_periods = len(self._perm)
@@ -28,6 +39,7 @@ class PriceMatrices(gpm.GlobalPriceMatrix):
 	    np.randow.shuffle(self._perm)
 	    start = 0
 	    self._index_in_epoch = batch_size
+	    assert batch_size <= num_train_periods
 
 	end = self._index_in_epoch
 
@@ -37,8 +49,11 @@ class PriceMatrices(gpm.GlobalPriceMatrix):
         return batch
 
 
-    def getSubMatrix(ind):
-	#TODO: normalized price submatrix
+    def getSubMatrix(self, ind):
+	dfc = self.pricematrix.iloc[:, ind:ind+self._window_size+1]	
+	df = dfc.copy()
+	self.__fillNaN(df)
+	self.__price_normalization(df)
 	return None
 
 
@@ -48,10 +63,20 @@ class PriceMatrices(gpm.GlobalPriceMatrix):
 	np.random.shuffle(self._perm)
 	
 
-    def __fillNaN(self):
+    def __fillNaN(self, df):
 	#refer to 'Working with missing data' on pandas doc
-	#TODO
-	pass
+	for r in df.iterrows():
+	    coin = r[0]
+	    row = r[1].iloc[:-1]
+	    isnull = row.isnull()
+	    if(isnull.any()):
+		if(sum(isnull) < MIN_NUM_PERIOD):
+		    df.loc[coin] = self._fake_prices
+		else:
+		    nulls = r[1].loc[isnull]
+		    not_nulls = r[1].loc[~isnull]
+		    assert (nulls.index < not_nulls.index[0]).all()
+		    df.loc[coin, nulls.index] = not_nulls[0]
 
 
     def __removeLastNaNs(self):
