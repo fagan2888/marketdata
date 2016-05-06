@@ -12,7 +12,7 @@ class PriceMatrices(gpm.GlobalPriceMatrix):
 			 window_size = 30, train_portion = 0.7, validation_portion = 0.15, test_portion = 0.15):
 	super(PriceMatrices, self).__init__(start, end, period, csv, coin_filter)
 	self.__removeLastNaNs()
-	self.__normalize_portions(train_portion, \
+	self.__divide_data(train_portion, \
 				  validation_portion, \
 				  test_portion)
 	self.__permutation(window_size)
@@ -21,9 +21,10 @@ class PriceMatrices(gpm.GlobalPriceMatrix):
 	self._completed_epochs = 0
 
 
-    def __make_fake_prices():
-	self._fake_prices = [ FAKE_DEFLATION_FACTOR**(self._window_size - i - 1) \
-				for i in xrange(self._window_size + 1) ]
+    def __make_fake_prices(self):
+	self._fake_prices = np.array( \
+				[ FAKE_DEFLATION_FACTOR**(self._window_size - i - 1) \
+				for i in xrange(self._window_size + 1) ] )
 
 
     def next_batch(self, batch_size = 1):
@@ -53,7 +54,7 @@ class PriceMatrices(gpm.GlobalPriceMatrix):
 	dfc = self.pricematrix.iloc[:, ind:ind+self._window_size+1]	
 	df = dfc.copy()
 	fr = self.__fillNaN_pricenorm(df)
-	return None
+	return df
 
 
     def __permutation(self, window_size):
@@ -62,7 +63,7 @@ class PriceMatrices(gpm.GlobalPriceMatrix):
 	np.random.shuffle(self._perm)
 	
 
-    def __price_normalization(df, coin):
+    def __price_normalization(self, df, coin):
 	row = df.loc[coin]
 	df.loc[coin] = row / row.iloc[-2]
 
@@ -74,20 +75,18 @@ class PriceMatrices(gpm.GlobalPriceMatrix):
 	    row = r[1].iloc[:-1]
 	    isnull = row.isnull()
 	    if(isnull.any()):  #check if there are any NaN's
-		if(sum(~isnull) < MIN_NUM_PERIOD):
 		#check number of valid prices in the row
+		if(sum(~isnull) < MIN_NUM_PERIOD):
 		    df.loc[coin] = self._fake_prices
-		    fake_rows.append(coin)
 		else:
-		    nulls = r[1].loc[isnull]
-		    not_nulls = r[1].loc[~isnull]
+		    nulls = row.loc[isnull]
+		    not_nulls = row.loc[~isnull]
 		    assert (nulls.index < not_nulls.index[0]).all()
-		    df.loc[coin, nulls.index] = not_nulls[0]
+		    df.loc[coin, nulls.index] = not_nulls.iloc[0]
 		    self.__price_normalization(df, coin)
 	    else:
 		self.__price_normalization(df, coin)
 
-	return fake_rows
 
     def __removeLastNaNs(self):
 	i = -1
@@ -97,7 +96,7 @@ class PriceMatrices(gpm.GlobalPriceMatrix):
 	self._num_periods = self.pricematrix.shape[1] + i
 
 
-    def __normalize_portions(self, train_portion, validation_portion, test_portion):
+    def __divide_data(self, train_portion, validation_portion, test_portion):
 	if( test_portion <= 0 or \
 		validation_portion <= 0 or \
 		train_portion <=0):
