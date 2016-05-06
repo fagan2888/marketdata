@@ -10,6 +10,7 @@ class PriceMatrices(gpm.GlobalPriceMatrix):
 
     def __init__(self, start = gpm.YEAR, end = gpm.NOW, period = gpm.HALF_HOUR, csv = None, coin_filter = 0.2, \
 			 window_size = 30, train_portion = 0.7, validation_portion = 0.15, test_portion = 0.15):
+	assert window_size >= MIN_NUM_PERIOD
 	super(PriceMatrices, self).__init__(start, end, period, csv, coin_filter)
 	self.__removeLastNaNs()
 	self.__divide_data(train_portion, \
@@ -37,7 +38,7 @@ class PriceMatrices(gpm.GlobalPriceMatrix):
 	if self._index_in_epoch > num_train_periods:
 	    #complete one epoch, start new epoch
 	    self._completed_epochs += 1
-	    np.randow.shuffle(self._perm)
+	    np.random.shuffle(self._perm)
 	    start = 0
 	    self._index_in_epoch = batch_size
 	    assert batch_size <= num_train_periods
