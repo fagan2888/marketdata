@@ -57,8 +57,13 @@ class GlobalPriceMatrix(CoinList):
 
 
     @property
-    def pricematrix(self):
+    def pricedata(self):
 	return self._pm
+
+
+    @property
+    def pricematrix(self):
+	return self._pm.as_matrix()
 
 
     def getChart(self, coin, start, end):

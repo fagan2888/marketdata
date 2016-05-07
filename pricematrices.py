@@ -52,7 +52,7 @@ class PriceMatrices(gpm.GlobalPriceMatrix):
 
 
     def getSubMatrix(self, ind):
-	mc = self.pricematrix.iloc[:, ind:ind+self._window_size+1].as_matrix()	
+	mc = self.pricematrix[:, ind:ind+self._window_size+1]
 	m = mc.copy() 
 	self.__fillNaN_pricenorm(m)
 	return m
@@ -71,12 +71,12 @@ class PriceMatrices(gpm.GlobalPriceMatrix):
 
     def __fillNaN_pricenorm(self, m):
 	#refer to 'Working with missing data' on pandas doc
-	#for r in df.iterrows():
 	for i in xrange(m.shape[0]):
-	    #coin = r[0]
-	    row = m[i,:-1]#r[1].iloc[:-1]
+	    row = m[i,:-1]
 	    isnull = np.isnan(row)
-	    if(isnull.any()):  #check if there are any NaN's
+
+	    #check if there are any NaN's
+	    if(isnull.any()):
 		#check number of valid prices in the row
 		if(sum(~isnull) < MIN_NUM_PERIOD):
 		    m[i] = self._fake_prices
@@ -93,10 +93,10 @@ class PriceMatrices(gpm.GlobalPriceMatrix):
 
     def __removeLastNaNs(self):
 	i = -1
-	while( self.pricematrix.iloc[:, i].isnull().any() ):
+	while( self.pricedata.iloc[:, i].isnull().any() ):
 	    i -= 1
 	i += 1
-	self._num_periods = self.pricematrix.shape[1] + i
+	self._num_periods = self.pricedata.shape[1] + i
 
 
     def __divide_data(self, train_portion, validation_portion, test_portion):
