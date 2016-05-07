@@ -52,10 +52,10 @@ class PriceMatrices(gpm.GlobalPriceMatrix):
 
 
     def getSubMatrix(self, ind):
-	dfc = self.pricematrix.iloc[:, ind:ind+self._window_size+1].as_matrix()	
-	df = dfc.copy() #memory problem TODO: fix this
-	fr = self.__fillNaN_pricenorm(df)
-	return df
+	mc = self.pricematrix.iloc[:, ind:ind+self._window_size+1].as_matrix()	
+	m = mc.copy() 
+	self.__fillNaN_pricenorm(m)
+	return m
 
 
     def __permutation(self, window_size):
@@ -64,30 +64,31 @@ class PriceMatrices(gpm.GlobalPriceMatrix):
 	np.random.shuffle(self._perm)
 	
 
-    def __price_normalization(self, df, coin):
-	row = df.loc[coin]
-	df.loc[coin] = row / row.iloc[-2]
+    def __price_normalization(self, m, i):
+	row = m[i]
+	m[i] = row / row[-2]
 
 
-    def __fillNaN_pricenorm(self, df):
+    def __fillNaN_pricenorm(self, m):
 	#refer to 'Working with missing data' on pandas doc
 	#for r in df.iterrows():
-	for i in df.shape[0]
+	for i in xrange(m.shape[0]):
 	    #coin = r[0]
-	    row = df[i,:-1]#r[1].iloc[:-1]
+	    row = m[i,:-1]#r[1].iloc[:-1]
 	    isnull = np.isnan(row)
 	    if(isnull.any()):  #check if there are any NaN's
 		#check number of valid prices in the row
 		if(sum(~isnull) < MIN_NUM_PERIOD):
-		    df.loc[coin] = self._fake_prices
+		    m[i] = self._fake_prices
 		else:
-		    nulls = row.loc[isnull]
-		    not_nulls = row.loc[~isnull]
-		    assert (nulls.index < not_nulls.index[0]).all()
-		    df.loc[coin, nulls.index] = not_nulls.iloc[0]
-		    self.__price_normalization(df, coin)
+		    nulls = np.where(isnull)[0]
+		    not_nulls = np.where(~isnull)[0]
+		    assert (nulls < not_nulls[0]).all()
+		    m[i,nulls] = row[not_nulls[0]]
+
+		    self.__price_normalization(m, i)
 	    else:
-		self.__price_normalization(df, coin)
+		self.__price_normalization(m, i)
 
 
     def __removeLastNaNs(self):
