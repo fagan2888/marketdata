@@ -24,7 +24,13 @@ p = pm.PriceMatrices(csv = 'pm.csv')
 def test():
     for i in xrange(590):
 	p.next_batch(batch_size = 30)
-	print(i, p._index_in_epoch, p._completed_epochs)
+	print(i, p.index_in_epoch, p.completed_epochs)
+
+    print(p.num_train_samples)
+    print(p.num_validation_samples)
+    print(p.num_test_samples)
+    print(p.validation_indices.shape)
+    print(p.test_indices.shape)
 
 def main():
     test()

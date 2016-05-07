@@ -12,14 +12,50 @@ class PriceMatrices(gpm.GlobalPriceMatrix):
 			 window_size = 30, train_portion = 0.7, validation_portion = 0.15, test_portion = 0.15):
 	assert window_size >= MIN_NUM_PERIOD
 	super(PriceMatrices, self).__init__(start, end, period, csv, coin_filter)
+	self._window_size = window_size
 	self.__removeLastNaNs()
 	self.__divide_data(train_portion, \
 				  validation_portion, \
 				  test_portion)
-	self.__permutation(window_size)
+	self.__permutation()
 	self.__make_fake_prices()
 	self._index_in_epoch = 0
 	self._completed_epochs = 0
+
+
+    @property
+    def index_in_epoch(self):
+	return self._index_in_epoch
+
+
+    @property
+    def completed_epochs(self):
+	return self._completed_epochs
+
+
+    @property
+    def num_train_samples(self):
+	return self._num_train_samples
+
+
+    @property
+    def num_validation_samples(self):
+	return self._num_validation_samples
+
+
+    @property
+    def validation_indices(self):
+	return self._val_ind[:-self._window_size]
+
+
+    @property
+    def test_indices(self):
+	return self._test_ind[:-self._window_size]
+
+
+    @property
+    def num_test_samples(self):
+	return self._num_test_samples
 
 
     def __make_fake_prices(self):
@@ -31,17 +67,16 @@ class PriceMatrices(gpm.GlobalPriceMatrix):
     def next_batch(self, batch_size = 1):
 	#based on: https://goo.gl/bv7hp7
 	batch = []
-	num_train_periods = len(self._perm)
 	start = self._index_in_epoch
 	self._index_in_epoch += batch_size
 
-	if self._index_in_epoch > num_train_periods:
+	if self._index_in_epoch > self._num_train_samples:
 	    #complete one epoch, start new epoch
 	    self._completed_epochs += 1
 	    np.random.shuffle(self._perm)
 	    start = 0
 	    self._index_in_epoch = batch_size
-	    assert batch_size <= num_train_periods
+	    assert batch_size <= self._num_train_samples
 
 	end = self._index_in_epoch
 
@@ -58,9 +93,9 @@ class PriceMatrices(gpm.GlobalPriceMatrix):
 	return m
 
 
-    def __permutation(self, window_size):
-	self._window_size = window_size
-	self._perm = self._train_ind[:-window_size]
+    def __permutation(self):
+	self._perm = \
+		self._train_ind[:-self._window_size]
 	np.random.shuffle(self._perm)
 	
 
@@ -108,5 +143,16 @@ class PriceMatrices(gpm.GlobalPriceMatrix):
 	    s = float(train_portion + validation_portion + test_portion)
 	    portions = np.array([train_portion, train_portion + validation_portion]) / s
 	    portion_split = (portions * self._num_periods).astype(int)
-	    indices = range(self._num_periods)
+	    indices = np.arange(self._num_periods)
 	    self._train_ind, self._val_ind, self._test_ind = np.split(indices, portion_split)
+
+	    self._num_train_samples = self._val_ind[0] \
+					 - self._window_size
+	    self._num_validation_samples = \
+		self._test_ind[0] - self._num_train_samples \
+					 - self._window_size
+	    self._num_test_samples = \
+		self._num_periods\
+		 - self._num_train_samples \
+		 - self._num_validation_samples \
+		 - self._window_size
