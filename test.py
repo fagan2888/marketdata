@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from __future__ import print_function
-import pricematrices as pm
+import marketdata.pricematrices as pm
 import time
 from functools import wraps
  
