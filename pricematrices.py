@@ -93,10 +93,10 @@ class PriceMatrices(gpm.GlobalPriceMatrix):
 
     def __removeLastNaNs(self):
 	i = -1
-	while( self.pricedata.iloc[:, i].isnull().any() ):
+	while( np.isnan(self.pricematrix[:, i]).any() ):
 	    i -= 1
 	i += 1
-	self._num_periods = self.pricedata.shape[1] + i
+	self._num_periods = self.pricematrix.shape[1] + i
 
 
     def __divide_data(self, train_portion, validation_portion, test_portion):
