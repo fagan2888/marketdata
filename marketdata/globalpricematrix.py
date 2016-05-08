@@ -113,10 +113,3 @@ class GlobalPriceMatrix(CoinList):
 	else:
 	    raise ValueError('peroid has to be 5min, 15min, 30min, 2hr, 4hr, or a day')
 
-FIVE_MINUTES = 60*5
-FIFTEEN_MINUTES = FIVE_MINUTES * 3
-HALF_HOUR = FIFTEEN_MINUTES * 2
-#HOUR = HALF_HOUR * 2
-TWO_HOUR = HALF_HOUR * 4
-FOUR_HOUR = HALF_HOUR * 8
-DAY = HALF_HOUR * 48
